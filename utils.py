@@ -2,10 +2,13 @@
 import sys
 import time
 import web
+from threading import Lock
 
 module_vars = {
     "ok_count": 0,
-    "fail_count": 0
+    "fail_count": 0,
+    "ok_lock": Lock(),
+    "fail_lock": Lock()
 }
 
 class TimeAPI:
@@ -51,7 +54,9 @@ class TimeAPI:
             }
         }
 
+        module_vars["ok_lock"].acquire()
         module_vars["ok_count"] += 1
+        module_vars["ok_lock"].release()
         return ret
     
     def error(self):
@@ -62,7 +67,9 @@ class TimeAPI:
             "info":str(sys.exc_info()[0])
         }
 
+        module_vars["fail_lock"].acquire()
         module_vars["fail_count"] += 1
+        module_vars["fail_lock"].release()
         return err
 
 class Count:
